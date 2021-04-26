@@ -14,6 +14,10 @@ class Usuario:
     def quant_agua(self):
         return self.__quant_agua
 
+    @quant_agua.setter
+    def quant_agua(self, ml):
+        self.__quant_agua += ml
+
     @property
     def quant_vezes(self):
         return self.__quant_vezes
@@ -25,9 +29,6 @@ class Usuario:
     @property
     def ident(self):
         return self.__ident
-
-    """def adiciona_id(self):
-        return self.__ident"""
 
 
 class UsuarioExistente:
@@ -49,7 +50,3 @@ class UsuarioExistente:
     @property
     def quant_vezes(self):
         return self.__quant_vezes
-
-    @quant_vezes.setter
-    def quant_vezes(self):
-        self.__quant_vezes += 1

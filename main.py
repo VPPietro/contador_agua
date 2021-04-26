@@ -1,26 +1,49 @@
 from usuario import Usuario, UsuarioExistente
+from contagem import Contagem
 
-opcao = input('1 - Novo Usuario\n'
-              '2 - Usuário existente\n>')
 lista_users = []
 usuario_posicao_index = {}
+login = False
+usuario = ''
 
 
 def main():
-    opcao = input('1 - Novo Usuario\n'
-                  '2 - Usuário existente\n>')
-    if opcao == '1':
 
-        usuario = Usuario(input('Digite seu nome: '))
-        lista_users.append(usuario.__dict__)
-        # usuario_posicao_index[list(Usuario.adiciona_id(usuario).keys())[0]] = Usuario.adiciona_id(usuario)
-        usuario_posicao_index[usuario.nome] = usuario.ident
-        print(lista_users, '\n', usuario_posicao_index)
+    global lista_users, usuario_posicao_index, login, usuario
+
+    if login:
+        print(f'# Logado como {usuario.nome} #')
+    opcao = input('1 - Login com novo usuário\n'
+                  '2 - Login com usuário existente\n'
+                  '3 - Registrar a quantidade de água que bebeu.\n'
+                  '>')
+
+    if opcao == '1':
+        usuario = Usuario(input('Digite seu nome: ').title())
+        if usuario.nome in usuario_posicao_index:
+            print('Usuário já existe!\n')
+            return main()
+        else:
+            lista_users.append(usuario.__dict__)
+            usuario_posicao_index[usuario.nome] = usuario.ident
+            login = True
 
     elif opcao == '2':
-        usuario = input('Digite seu nome: ')
+        usuario = input('Digite seu nome: '.title())
         if usuario in usuario_posicao_index:
-            print('existe', usuario_posicao_index[usuario])
+            usuario = UsuarioExistente(lista_users[usuario_posicao_index[usuario]])
+            login = True
+        else:
+            print('Usuário não encontrado!')
+            return main()
 
-while True:
+    elif opcao == '3':
+        if login:
+            usuario = Contagem(usuario.__dict__)
+            usuario.quantidade_agua(int(input('Digite a quantidade de água em ml > ')))
+    print(lista_users)
+    return main()
+
+
+if __name__ == '__main__':
     main()
