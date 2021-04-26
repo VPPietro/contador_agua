@@ -10,8 +10,14 @@ class Usuario:
         self.__quant_vezes = 0  # Quantas vezes o usuário bebeu água
         Usuario.contador_id = self.__id
 
-    def get_quant_agua(self):
+    @property
+    def quant_agua(self):
         return self.__quant_agua
 
-    def get_historico_registro(self):
+    @property
+    def quant_vezes(self):
         return self.__quant_vezes
+
+    @property
+    def nome(self):
+        return self.__nome
