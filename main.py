@@ -1,12 +1,26 @@
-from usuario import Usuario
+from usuario import Usuario, UsuarioExistente
 
-opcao = input('1 - Registra novo usuário\n'
-              '2 - Entra com usuário existente\n>')
+opcao = input('1 - Novo Usuario\n'
+              '2 - Usuário existente\n>')
+lista_users = []
+usuario_posicao_index = {}
 
-if opcao == 1:
-    usuario = Usuario(input('Digite seu nome'))
-    print(usuario)
 
-if opcao == 2:
-    # como chamar o usuario existente
-    pass
+def main():
+    opcao = input('1 - Novo Usuario\n'
+                  '2 - Usuário existente\n>')
+    if opcao == '1':
+
+        usuario = Usuario(input('Digite seu nome: '))
+        lista_users.append(usuario.__dict__)
+        # usuario_posicao_index[list(Usuario.adiciona_id(usuario).keys())[0]] = Usuario.adiciona_id(usuario)
+        usuario_posicao_index[usuario.nome] = usuario.ident
+        print(lista_users, '\n', usuario_posicao_index)
+
+    elif opcao == '2':
+        usuario = input('Digite seu nome: ')
+        if usuario in usuario_posicao_index:
+            print('existe', usuario_posicao_index[usuario])
+
+while True:
+    main()
