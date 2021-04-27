@@ -40,7 +40,9 @@ def main():
     elif opcao == '3':
         if login:
             usuario = Contagem(usuario.__dict__)
-            usuario.quantidade_agua(int(input('Digite a quantidade de água em ml > ')))
+            usuario.quant_agua = int(input('Digite a quantidade de água (ml) > '))
+            print(usuario.quant_agua)
+            print(usuario.quant_vezes)
     print(lista_users)
     return main()
 

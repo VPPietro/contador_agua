@@ -18,12 +18,13 @@ class Contagem:
         return self.__nome
 
     @property
-    def quantidade_agua(self):
+    def quant_agua(self):
         return self.__quant_agua
 
-    @quantidade_agua.setter
-    def quantidade_agua(self, ml):
+    @quant_agua.setter
+    def quant_agua(self, ml):
         self.__quant_agua += ml
+        self.__quant_vezes += 1
 
     @property
     def quant_vezes(self):
