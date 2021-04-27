@@ -1,5 +1,5 @@
 
-class AddUsuario:
+class Usuario:
 
     contador_id = 0
     list_dict_users = []
@@ -7,13 +7,21 @@ class AddUsuario:
     nome_ident = {}
 
     def __init__(self, nome):
-        self.__ident = AddUsuario.contador_id
-        self.__nome = nome
-        self.__quant_agua = 0  # Quantidade de água que o usuário bebeu
-        self.__quant_vezes = 0  # Quantas vezes o usuário bebeu água
-        AddUsuario.contador_id += 1
-        self.nome_id()
-        self.lista_dicionarios()
+        if nome in Usuario.nome_ident:
+            print('existe')
+            dict_user = Usuario.list_dict_users[Usuario.nome_ident[nome]]
+            self.__ident = dict_user[list(dict_user)[0]]
+            self.__nome = dict_user[list(dict_user)[1]]
+            self.__quant_agua = dict_user[list(dict_user)[2]]
+            self.__quant_vezes = dict_user[list(dict_user)[3]]
+        else:
+            self.__ident = Usuario.contador_id
+            self.__nome = nome
+            self.__quant_agua = 0     # Quantidade de água que o usuário bebeu
+            self.__quant_vezes = 0    # Quantas vezes o usuário registrou que bebeu água
+            Usuario.contador_id += 1
+            self.nome_id()            # Adiciona a lista de dict o user e id '{'Pietro': 0}
+            self.lista_dicionarios()  # Adiciona/Atualiza a lista de dict de atributos e valores de cada user
 
     @property
     def ident(self):
@@ -38,62 +46,40 @@ class AddUsuario:
         return self.__quant_vezes
 
     def nome_id(self):
-        AddUsuario.nome_ident[self.__nome] = self.__ident
+        Usuario.nome_ident[self.__nome] = self.__ident
 
     def lista_dicionarios(self):
-        if AddUsuario.Novo:                                                             # teste se é nova inclusao na lista
-            AddUsuario.list_dict_users.append(self.__dict__)                            # adiciona dict na lista
-            return AddUsuario.list_dict_users[AddUsuario.nome_ident[self.__nome]]       # retorna a lista na posicao do dict (dict)
+        if Usuario.Novo:                                                     # teste se é nova inclusao na lista
+            Usuario.list_dict_users.append(self.__dict__)                    # adiciona dict na lista
+            return Usuario.list_dict_users[Usuario.nome_ident[self.__nome]]  # retorna a lista na posicao do dict (dict)
         else:
-            del AddUsuario.list_dict_users[AddUsuario.nome_ident[self.__nome]]                  # deleta o dicionario desatualizado na lista
-            AddUsuario.list_dict_users.insert(AddUsuario.nome_ident[self.__nome], self.__dict__)# adiciona dict na lista
-            return AddUsuario.list_dict_users[AddUsuario.nome_ident[self.__nome]]               # retorna a lista na posicao do dict (dict)
+            del Usuario.list_dict_users[Usuario.nome_ident[self.__nome]]                    # deleta posição original
+            Usuario.list_dict_users.insert(Usuario.nome_ident[self.__nome], self.__dict__)  # adiciona dict na lista
+            return Usuario.list_dict_users[Usuario.nome_ident[self.__nome]]                 # adiciona na posição origi.
 
 
-class ExeUsuario(AddUsuario):
+"""class ExeUsuario(AddUsuario):
 
     list_user = []
 
     def __init__(self, nome_user):
         if nome_user in ExeUsuario.list_user:
-            print('entrou no existente')
-            dict = AddUsuario.list_dict_users[AddUsuario.nome_ident[nome_user]]
-            self.__ident = dict[list(dict)[0]]
-            self.__nome = dict[list(dict)[1]]
-            self.__quant_agua = dict[list(dict)[2]]
-            self.__quant_vezes = dict[list(dict)[3]]
+            dict_user = AddUsuario.list_dict_users[AddUsuario.nome_ident[nome_user]]
+            self.__ident = dict_user[list(dict_user)[0]]
+            self.__nome = dict_user[list(dict_user)[1]]
+            self.__quant_agua = dict_user[list(dict_user)[2]]
+            self.__quant_vezes = dict_user[list(dict_user)[3]]
 
         else:
-            print('entrou no super')
             super().__init__(nome_user)
+            print(self.__dict__)
             ExeUsuario.list_user.append(nome_user)
             AddUsuario.Novo = True
 
-
-"""
 EU FUCKING PODERIA FUCKING TER FEITO FUCKING TUDO NA FUCKING MESMA FUCKING CLASSE :')
-
+só colocar o if-else dentro do __init__ da AddUsuario
 """
 
+"""wrong"""
 
 
-
-usuario = ExeUsuario('Pietro')
-usuario = ExeUsuario('Pietro')
-print(usuario.__dict__)
-usuario = ExeUsuario('Pietro')
-print(usuario.__dict__)
-usuario = ExeUsuario('Giovanni')
-print(usuario.__dict__)
-usuario = ExeUsuario('Giovanni')
-print(usuario.__dict__)
-usuario = ExeUsuario('Pietro')
-print(usuario.__dict__)
-usuario = ExeUsuario('cú')
-usuario = ExeUsuario('boobs')
-usuario = ExeUsuario('Pietro')
-print(usuario.__dict__)
-usuario = ExeUsuario('Giovanni')
-print(usuario.__dict__)
-usuario = ExeUsuario('boobs')
-print(usuario.__dict__)
