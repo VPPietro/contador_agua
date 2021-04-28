@@ -28,4 +28,4 @@ class Ranking:
                 quant_vezes[x] = 1
                 lista_nomes.append(x)
             cont += 1
-        return dicionario, quant_vezes
+        return dicionario, quant_vezes, quantidade
