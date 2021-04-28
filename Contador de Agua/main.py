@@ -2,7 +2,9 @@ from usuario import User
 from contagem import Ranking
 from media import Media
 
+
 lista_dict = []
+
 while True:
     nome = input('Digite seu nome ou sair para finalizar: ').title()
     if nome == 'Sair':

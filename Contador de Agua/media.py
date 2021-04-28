@@ -1,5 +1,4 @@
 
-
 class Media:
 
     def __init__(self, dicionario_copos, list_quantidade):
