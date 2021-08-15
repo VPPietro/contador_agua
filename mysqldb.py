@@ -6,7 +6,7 @@ class database:
     password = 'toor'
 
     def cria_db(self):
-        """Cria um novo schema caso ainda não exista"""
+        """Cria um novo schema no mysql caso ainda não exista"""
         try:
             db = mysql.connector.connect(
                 host = "localhost",
@@ -61,13 +61,14 @@ class database:
         self.cursor.close()
         self.db.close()
 
-    def get_idusuario(self, nome) -> int:
+    def get_idusuario(self, nome: str) -> int:
         """Obtem o id do usuário atravez do nome. (Já deve ter uma conexão com o db estabelecida"""
         self.cursor.execute(f"SELECT idusuario FROM usuario WHERE nome='{nome}'")
         idusuario = self.cursor.fetchall()
         return idusuario[0]['idusuario']
 
     def existente(self, nome_usuario='', id_usuario=0) -> bool:
+        """Retorna valor booleano para a existência do usuario ou id especificado"""
         try:
             if nome_usuario:
                 database.open_connection(self)
@@ -84,13 +85,13 @@ class database:
         finally:
             database.close_connection(self)
 
-    def get_SELECT(self, id_usuario=0, raw_usuarios=True):
+    def get_SELECT(self, id_usuario=0, all_usuarios=True):
         """Disponibiliza dois tipos de SELECTs, usados para gerar o conteúdo do método GET"""
         if id_usuario > 0:
-            raw_usuarios=False
+            all_usuarios=False
         try:
             database.open_connection(self)
-            if raw_usuarios:
+            if all_usuarios:
                 self.cursor.execute(f"SELECT * FROM {self.nome_database}.usuario")
             else:
                 self.cursor.execute(f"SELECT quantidade FROM agua WHERE usuario_idusuario={id_usuario};")
@@ -100,6 +101,7 @@ class database:
             database.close_connection(self)
 
     def post_INSERT(self, nome: str, quantidade_agua: int):
+        """Recebe o usuario e a quantidade de água e cria uma nova entrada no db"""
         try:
             database.open_connection(self)
             self.cursor.execute(f"INSERT INTO usuario(nome) VALUES('{nome}');")
@@ -110,6 +112,7 @@ class database:
             database.close_connection(self)
 
     def put_UPDATE(self, nome: str, quantidade_agua: int):
+        """Recebe o usuário e a quantidade de água e atualiza uma entrada no db"""
         try:
             database.open_connection(self)
             idusuario = database.get_idusuario(self, nome)
@@ -118,7 +121,8 @@ class database:
         finally:
             database.close_connection(self)
 
-    def delete_DELETE(self, id):
+    def delete_DELETE(self, id: int):
+        """Deleta uma entrada no db de acordo com o id especificado"""
         try:
             database.open_connection(self)
             self.cursor.execute(f"DELETE FROM agua WHERE usuario_idusuario=({id});")
