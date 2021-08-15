@@ -12,9 +12,9 @@
 >* caso já exista será ignorado
 
 
-PUT:
-'/' Necessário realizar uma requisição PUT na raiz do endereço do server com um arquivo JSON no body formatado da seguinte forma para atualizar um ou mais consumo(s) de um usuario
-{
+>PUT:
+>'/' Necessário realizar uma requisição PUT na raiz do endereço do server com um arquivo JSON no body formatado da seguinte forma para atualizar um ou mais >consumo(s) de um usuario
+>{
     "zezinho": {
         "quantidade_agua": 100
     },
@@ -22,12 +22,12 @@ PUT:
         "quantidade_agua": 200
     }
 }
-* Caso não exista será ignorado
+>* Caso não exista será ignorado
 
 
-DELETE:
-'/id_usuario' Necessário realizar uma requisição DELETE e adicionar / + id do usuario que deseja deletar
-* caso não exista o id, será ignorado.
+>DELETE:
+>'/id_usuario' Necessário realizar uma requisição DELETE e adicionar / + id do usuario que deseja deletar
+>* caso não exista o id, será ignorado.
 
 
 **Lembrando que o usuário deve estar logado para conseguir fazer qualquer requisição na API
