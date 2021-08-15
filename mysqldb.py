@@ -46,7 +46,7 @@ class database:
             cursor.close()
             db.close()
 
-    def _open_connection(self):
+    def open_connection(self):
         """Abre conexão para db criado"""
         self.db = mysql.connector.connect(
             host = "localhost",
@@ -56,35 +56,40 @@ class database:
         # Seleciona db
         self.cursor.execute(f"USE {self.nome_database} ;")
 
-    def _close_connection(self):
+    def close_connection(self):
         """Fecha conexão com o db criado"""
         self.cursor.close()
         self.db.close()
 
-    def _get_idusuario(self, nome) -> int:
+    def get_idusuario(self, nome) -> int:
         """Obtem o id do usuário atravez do nome. (Já deve ter uma conexão com o db estabelecida"""
         self.cursor.execute(f"SELECT idusuario FROM usuario WHERE nome='{nome}'")
         idusuario = self.cursor.fetchall()
         return idusuario[0]['idusuario']
 
-    def existente(self, nome_usuario: str) -> bool:
+    def existente(self, nome_usuario='', id_usuario=0) -> bool:
         try:
-            database._open_connection(self)
-            self.cursor.execute(f"SELECT nome FROM usuario WHERE nome='{nome_usuario}';")
-            result = self.cursor.fetchall()
+            if nome_usuario:
+                database.open_connection(self)
+                self.cursor.execute(f"SELECT nome FROM usuario WHERE nome='{nome_usuario}';")
+                result = self.cursor.fetchall()
+            elif id_usuario:
+                database.open_connection(self)
+                self.cursor.execute(f"SELECT nome FROM usuario WHERE idusuario='{id_usuario}';")
+                result = self.cursor.fetchall()
             if result:
                 return True
             else:
                 return False
         finally:
-            database._close_connection(self)
+            database.close_connection(self)
 
     def get_SELECT(self, id_usuario=0, raw_usuarios=True):
         """Disponibiliza dois tipos de SELECTs, usados para gerar o conteúdo do método GET"""
         if id_usuario > 0:
             raw_usuarios=False
         try:
-            database._open_connection(self)
+            database.open_connection(self)
             if raw_usuarios:
                 self.cursor.execute(f"SELECT * FROM {self.nome_database}.usuario")
             else:
@@ -92,32 +97,32 @@ class database:
             result = self.cursor.fetchall()
             return result
         finally:
-            database._close_connection(self)
+            database.close_connection(self)
 
     def post_INSERT(self, nome: str, quantidade_agua: int):
         try:
-            database._open_connection(self)
+            database.open_connection(self)
             self.cursor.execute(f"INSERT INTO usuario(nome) VALUES('{nome}');")
-            idusuario = database._get_idusuario(self, nome)
+            idusuario = database.get_idusuario(self, nome)
             self.cursor.execute(f"INSERT INTO agua(quantidade, usuario_idusuario) VALUES ({quantidade_agua}, {idusuario});")
             self.db.commit()
         finally:
-            database._close_connection(self)
+            database.close_connection(self)
 
     def put_UPDATE(self, nome: str, quantidade_agua: int):
         try:
-            database._open_connection(self)
-            idusuario = database._get_idusuario(self, nome)
+            database.open_connection(self)
+            idusuario = database.get_idusuario(self, nome)
             self.cursor.execute(f"INSERT INTO agua(quantidade, usuario_idusuario) VALUES ({quantidade_agua}, {idusuario})")
             self.db.commit()
         finally:
-            database._close_connection(self)
+            database.close_connection(self)
 
-    def delete_DELETE(self, nome):
+    def delete_DELETE(self, id):
         try:
-            database._open_connection(self)
-            self.cursor.execute(f"DELETE FROM agua WHERE usuario_idusuario=({database._get_idusuario(self, nome)});")
-            self.cursor.execute(f"DELETE FROM usuario WHERE nome='{nome}'")
+            database.open_connection(self)
+            self.cursor.execute(f"DELETE FROM agua WHERE usuario_idusuario=({id});")
+            self.cursor.execute(f"DELETE FROM usuario WHERE idusuario={id}")
             self.db.commit()
         finally:
-            database._close_connection(self)
+            database.close_connection(self)
