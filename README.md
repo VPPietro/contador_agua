@@ -2,14 +2,14 @@
 >'/' Necessário realizar uma requisição GET na raiz do endereço do server para receber todos os usuarios com suas informação de consumo de água
 
 
-POST:
-'/' Necessário realizar uma requisição POST na raiz do endereço do server com um arquivo JSON no body formatado da seguinte forma para criar um ou mais novo(s) usuario(s) e sua(s) informação(ões) de consumo de água iniciais
-{
+>POST:
+>'/' Necessário realizar uma requisição POST na raiz do endereço do server com um arquivo JSON no body formatado da seguinte forma para criar um ou mais novo(s) >usuario(s) e sua(s) informação(ões) de consumo de água iniciais
+>{
     "zezinho": {
         "quantidade_agua": 250
     }
 }
-* caso já exista será ignorado
+>* caso já exista será ignorado
 
 
 PUT:
