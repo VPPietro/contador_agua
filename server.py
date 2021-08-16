@@ -1,6 +1,7 @@
 from wsgiref.simple_server import make_server
 from mysqldb import database
 import json
+from http.server import BaseHTTPRequestHandler
 
 aguadb = database
 # Configure sua conexão com o MySQL aqui:
@@ -19,6 +20,7 @@ def get_JSON_REQUEST(environment):
     return json.loads(body)
 
 def web_app(environment, response):
+    print(environment)
     headers = [('Content-type', 'text/json; charset=utf-8')]
     env_method = environment.get('REQUEST_METHOD')
 
@@ -67,7 +69,6 @@ def web_app(environment, response):
                         retorno[x] = "Doesn't Exists"
         # Caso JSON não seja válido
         except:
-            print('JSON invalido')
             status = '406 NOT_ACCEPTABLE'
             response(status, headers)
             return [b'JSON invalido']
@@ -99,12 +100,12 @@ def web_app(environment, response):
             return [b'Sem id para deletar']
         # Testa se existe id validado e então deleta ou ignora
         if database.existente(aguadb, id_usuario=deletion_id):
-            retorno = 'Deleted'
+            retorno = {deletion_id: 'Deleted'}
             database.delete_DELETE(aguadb, deletion_id)
         else:
-            retorno = "Doesn't Exists"
+            retorno = {deletion_id: "Doesn't Exists"}
         # Define status 204 caso não exista o id ou ignora caso exista e retorna
-        if not 'Deleted' in retorno:
+        if not 'Deleted' in retorno.values():
             status = '204 NO_CONTENT'
         response(status, headers)
         retorno = json.dumps(retorno)
