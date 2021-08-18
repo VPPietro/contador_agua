@@ -1,7 +1,7 @@
 from wsgiref.simple_server import make_server
 from mysqldb import database
 import json
-from http.server import BaseHTTPRequestHandler
+import hashlib
 
 aguadb = database
 # Configure sua conexão com o MySQL aqui:
@@ -20,7 +20,20 @@ def get_JSON_REQUEST(environment):
     return json.loads(body)
 
 def web_app(environment, response):
-    print(environment)
+    def get_realm_hash(environ, user, realm):
+        if user == 'spy':
+            value = hashlib.md5()
+            # user:realm:password
+            input = '%s:%s:%s' % (user, realm, 'secret')
+            if not isinstance(input, bytes):
+                input = input.encode('UTF-8')
+            value.update(input)
+            hash = value.hexdigest()
+            return hash
+        return None
+
+    teste = get_realm_hash(environment, 'spy', environment.get("HTTP_AUTHORIZATION"))
+    print(teste)
     headers = [('Content-type', 'text/json; charset=utf-8')]
     env_method = environment.get('REQUEST_METHOD')
 
@@ -86,6 +99,7 @@ def web_app(environment, response):
     elif env_method == 'DELETE':
         status = '200 OK'
         retorno = {}
+        print(environment.get('HTTP_AUTHORIZATION'))
         # Recebe id de usuário que esta tentando deletar
         # testa se foi informado e se é valido
         try:
