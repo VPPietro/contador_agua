@@ -5,29 +5,42 @@ class database:
     nome_user = 'root'
     password = 'toor'
 
+    def open_connection(self, criadb=False, dictionary=True):
+        """Abre conexão para db criado"""
+        self.db = mysql.connector.connect(
+            host = "localhost",
+            user = self.nome_user,
+            password = self.password)
+        self.cursor = self.db.cursor(dictionary=dictionary)
+        if criadb:
+            self.cursor.execute(f"CREATE DATABASE IF NOT EXISTS {self.nome_database}")
+        # Seleciona db
+        self.cursor.execute(f"USE {self.nome_database} ;")
+
+    def close_connection(self):
+        """Finaliza conexão com o db criado"""
+        self.cursor.close()
+        self.db.close()
+
     def cria_db(self):
         """Cria um novo schema no mysql caso ainda não exista"""
         try:
-            db = mysql.connector.connect(
-                host = "localhost",
-                user = self.nome_user,
-                password = self.password)
-            cursor = db.cursor()
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {self.nome_database}")
-            # Seleciona db
-            cursor.execute(f"USE {self.nome_database} ;")
+            # Abre conexão com criação de schema
+            database.open_connection(self, criadb=True)
 
             # Cria tabela Usuario
-            cursor.execute(
+            self.cursor.execute(
                 f"CREATE TABLE IF NOT EXISTS {self.nome_database}.usuario ("
                 "idusuario INT NOT NULL AUTO_INCREMENT,"
                 "nome VARCHAR(45) NOT NULL,"
+                "login VARCHAR(32) NOT NULL,"
                 "PRIMARY KEY (idusuario),"
                 "UNIQUE INDEX idusuario_UNIQUE (idusuario ASC) VISIBLE,"
-                "UNIQUE INDEX nome_UNIQUE (nome ASC) VISIBLE)")
+                "UNIQUE INDEX nome_UNIQUE (nome ASC) VISIBLE,"
+                "UNIQUE INDEX login_UNIQUE (login ASC) VISIBLE)")
 
             # Cria tabela Água
-            cursor.execute(
+            self.cursor.execute(
                 f"CREATE TABLE IF NOT EXISTS {self.nome_database}.agua ("
                 "idagua INT NOT NULL AUTO_INCREMENT,"
                 "quantidade INT NOT NULL,"
@@ -41,31 +54,25 @@ class database:
                 " ON DELETE NO ACTION"
                 " ON UPDATE NO ACTION)")
         except mysql.connector.errors.ProgrammingError:
-            print('Usuario ou senha incorretos para login no db')
+            print('Erro de conexão com a db ou sintaxe do comando')
         finally:
-            cursor.close()
-            db.close()
-
-    def open_connection(self):
-        """Abre conexão para db criado"""
-        self.db = mysql.connector.connect(
-            host = "localhost",
-            user = self.nome_user,
-            password = self.password)
-        self.cursor = self.db.cursor(dictionary=True)
-        # Seleciona db
-        self.cursor.execute(f"USE {self.nome_database} ;")
-
-    def close_connection(self):
-        """Fecha conexão com o db criado"""
-        self.cursor.close()
-        self.db.close()
+            database.close_connection(self)
 
     def get_idusuario(self, nome: str) -> int:
-        """Obtem o id do usuário atravez do nome. (Já deve ter uma conexão com o db estabelecida"""
+        """Obtem o id do usuário atravez do nome. (Já deve ter uma conexão com o db estabelecida)"""
         self.cursor.execute(f"SELECT idusuario FROM usuario WHERE nome='{nome}'")
         idusuario = self.cursor.fetchall()
         return idusuario[0]['idusuario']
+
+    def get_usuario_if_exists(self, hash='') -> str:
+        """Obtem o hash do login e retorna caso exista se não só retorna None. (Já deve ter uma conexão com o db estabelecida)"""
+        result = self.cursor.execute(f"SELECT nome FROM usuario WHERE login='{hash}'")
+        result = self.cursor.fetchall()
+        if result:
+            return result
+        else:
+            return None
+
 
     def existente(self, nome_usuario='', id_usuario=0) -> bool:
         """Retorna valor booleano para a existência do usuario ou id especificado"""

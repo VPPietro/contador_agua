@@ -1,3 +1,4 @@
+from os import environ
 from wsgiref.simple_server import make_server
 from mysqldb import database
 import json
@@ -19,24 +20,25 @@ def get_JSON_REQUEST(environment):
     # Converte em dict
     return json.loads(body)
 
-def web_app(environment, response):
-    def get_realm_hash(environ, user, realm):
-        if user == 'spy':
-            value = hashlib.md5()
-            # user:realm:password
-            input = '%s:%s:%s' % (user, realm, 'secret')
-            if not isinstance(input, bytes):
-                input = input.encode('UTF-8')
-            value.update(input)
-            hash = value.hexdigest()
-            return hash
-        return None
+def hash_http_auth(http_auth):
+        value = hashlib.md5()
+        input = '%s:%s' % (http_auth, 'baconzitos')
+        if not isinstance(input, bytes):
+            input = input.encode('UTF-8')
+        value.update(input)
+        return value.hexdigest()
 
-    teste = get_realm_hash(environment, 'spy', environment.get("HTTP_AUTHORIZATION"))
-    print(teste)
+def web_app(environment, response):
     headers = [('Content-type', 'text/json; charset=utf-8')]
     env_method = environment.get('REQUEST_METHOD')
-
+    usuario_request_hash = hash_http_auth(environment.get('HTTP_AUTHORIZATION')[6:])
+    path_info = environment.get('PATH_INFO')[1:]
+    try:
+        database.open_connection(aguadb)
+        usuario = database.get_usuario_if_exists(aguadb, hash=usuario_request_hash)
+    finally:
+        database.close_connection(aguadb)
+    print(usuario_request_hash)
     if env_method == 'GET':
         # Recebe usuários da db
         usuarios = database.get_SELECT(aguadb)
@@ -57,6 +59,15 @@ def web_app(environment, response):
         status = '200 OK'
         response(status, headers)
         return [data.encode('utf-8')]
+
+    elif env_method == 'POST':
+        status = '201 CREATED'
+        body = get_JSON_REQUEST(environment)
+        retorno = {}
+        user_http_hash = environment.get("HTTP_AUTHORIZATION")[6:]
+
+        response(status, headers)
+        return [b'nothing']
 
     elif env_method == 'POST' or env_method == 'PUT':
         status = '201 CREATED'
