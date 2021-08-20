@@ -58,65 +58,24 @@ class database:
         finally:
             database.close_connection(self)
 
-    def get_idusuario(self, nome: str) -> int:
-        """Obtem o id do usuário atravez do nome. (Já deve ter uma conexão com o db estabelecida)"""
-        self.cursor.execute(f"SELECT idusuario FROM usuario WHERE nome='{nome}'")
-        idusuario = self.cursor.fetchall()
-        return idusuario[0]['idusuario']
-
     def get_usuario_if_exists(self, hash='') -> str:
         """Obtem o hash do login e retorna caso exista se não só retorna None. (Já deve ter uma conexão com o db estabelecida)"""
-        result = self.cursor.execute(f"SELECT nome FROM usuario WHERE login='{hash}'")
+        result = self.cursor.execute(f"SELECT idusuario, nome FROM usuario WHERE login='{hash}'")
         result = self.cursor.fetchall()
         if result:
             return result
         else:
-            return None
+            return False
 
+    def get_SELECT(self, id_usuario: int):
+        """Disponibiliza todos os inputs do usuario informado (deve estar conectado na db"""
+        self.cursor.execute(f"SELECT quantidade FROM {self.nome_database}.agua WHERE usuario_idusuario={id_usuario};")
+        return self.cursor.fetchall()
 
-    def existente(self, nome_usuario='', id_usuario=0) -> bool:
-        """Retorna valor booleano para a existência do usuario ou id especificado"""
-        try:
-            if nome_usuario:
-                database.open_connection(self)
-                self.cursor.execute(f"SELECT nome FROM usuario WHERE nome='{nome_usuario}';")
-                result = self.cursor.fetchall()
-            elif id_usuario:
-                database.open_connection(self)
-                self.cursor.execute(f"SELECT nome FROM usuario WHERE idusuario='{id_usuario}';")
-                result = self.cursor.fetchall()
-            if result:
-                return True
-            else:
-                return False
-        finally:
-            database.close_connection(self)
-
-    def get_SELECT(self, id_usuario=0, all_usuarios=True):
-        """Disponibiliza dois tipos de SELECTs, usados para gerar o conteúdo do método GET"""
-        if id_usuario > 0:
-            all_usuarios=False
-        try:
-            database.open_connection(self)
-            if all_usuarios:
-                self.cursor.execute(f"SELECT * FROM {self.nome_database}.usuario")
-            else:
-                self.cursor.execute(f"SELECT quantidade FROM agua WHERE usuario_idusuario={id_usuario};")
-            result = self.cursor.fetchall()
-            return result
-        finally:
-            database.close_connection(self)
-
-    def post_INSERT(self, nome: str, quantidade_agua: int):
+    def post_INSERT(self, id_usuario: int, quantidade_agua: int):
         """Recebe o usuario e a quantidade de água e cria uma nova entrada no db"""
-        try:
-            database.open_connection(self)
-            self.cursor.execute(f"INSERT INTO usuario(nome) VALUES('{nome}');")
-            idusuario = database.get_idusuario(self, nome)
-            self.cursor.execute(f"INSERT INTO agua(quantidade, usuario_idusuario) VALUES ({quantidade_agua}, {idusuario});")
-            self.db.commit()
-        finally:
-            database.close_connection(self)
+        self.cursor.execute(f"INSERT INTO agua(quantidade, usuario_idusuario) VALUES ({quantidade_agua}, {id_usuario});")
+        self.db.commit()
 
     def put_UPDATE(self, nome: str, quantidade_agua: int):
         """Recebe o usuário e a quantidade de água e atualiza uma entrada no db"""

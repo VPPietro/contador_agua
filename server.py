@@ -29,112 +29,66 @@ def hash_http_auth(http_auth):
         return value.hexdigest()
 
 def web_app(environment, response):
+
+    # Obtendo dados iniciais:
     headers = [('Content-type', 'text/json; charset=utf-8')]
     env_method = environment.get('REQUEST_METHOD')
-    usuario_request_hash = hash_http_auth(environment.get('HTTP_AUTHORIZATION')[6:])
+    usuario_request_hash = hash_http_auth(environment.get('HTTP_AUTHORIZATION')[6:]) if environment.get('HTTP_AUTHORIZATION') else False
     path_info = environment.get('PATH_INFO')[1:]
     try:
         database.open_connection(aguadb)
-        usuario = database.get_usuario_if_exists(aguadb, hash=usuario_request_hash)
+        usuario = database.get_usuario_if_exists(aguadb, hash=usuario_request_hash) if usuario_request_hash else False
+        if usuario:
+            idusuario = usuario[0]['idusuario']
+            usuario = usuario[0]['nome']
     finally:
         database.close_connection(aguadb)
-    print(usuario_request_hash)
-    if env_method == 'GET':
-        # Recebe usuários da db
-        usuarios = database.get_SELECT(aguadb)
-        data = {}
-        # Organiza os usuários em um dict
-        for x in usuarios:
-            temp_result = database.get_SELECT(aguadb, x['idusuario'])
+
+
+    if usuario:  # Se esta logado:
+
+        if env_method == 'GET':
+            status = '200 OK'
+            # Alterar para mostrar todos os inputs com os ids dos inputs **
             try:
                 database.open_connection(aguadb)
-                data[x['nome']] = {'quantidade_agua': 0, 'quantidade_inputs': 0, 'id': database.get_idusuario(aguadb, x['nome'])}
+                select = database.get_SELECT(aguadb, idusuario)
+                quantidade_input = len(select)
+                quantidade_agua = 0
+                for x in select:
+                    quantidade_agua += x['quantidade']
+                result = {usuario: {'quantidade_agua': quantidade_agua, 'quantidade_inputs': quantidade_input}}
             finally:
                 database.close_connection(aguadb)
-            for y in temp_result:
-                data[x['nome']]['quantidade_agua'] += y['quantidade']
-                data[x['nome']]['quantidade_inputs'] += 1
-        # Converte dict de usuários para JSON e retorna
-        data = json.dumps(data)
-        status = '200 OK'
-        response(status, headers)
-        return [data.encode('utf-8')]
-
-    elif env_method == 'POST':
-        status = '201 CREATED'
-        body = get_JSON_REQUEST(environment)
-        retorno = {}
-        user_http_hash = environment.get("HTTP_AUTHORIZATION")[6:]
-
-        response(status, headers)
-        return [b'nothing']
-
-    elif env_method == 'POST' or env_method == 'PUT':
-        status = '201 CREATED'
-        # Recebe JSON da requisição
-        body = get_JSON_REQUEST(environment)
-        retorno = {}
-        # Verifica se JSON é valido e se usuário existe,
-        # então CRIA, ATUALIZA ou IGNORA de acordo com o metodo da request
-        try:
-            lista_nomes = list(body.keys())
-            for x in lista_nomes:
-                if database.existente(aguadb, x):
-                    if env_method == 'POST':
-                        retorno[x] = 'Already Exists'
-                    else:
-                        retorno[x] = 'Updated'
-                        database.put_UPDATE(aguadb, x, body[x]['quantidade_agua'])
-                else:
-                    if env_method == 'POST':
-                        retorno[x] = 'Created'
-                        database.post_INSERT(aguadb, x, body[x]['quantidade_agua'])
-                    else:
-                        retorno[x] = "Doesn't Exists"
-        # Caso JSON não seja válido
-        except:
-            status = '406 NOT_ACCEPTABLE'
             response(status, headers)
-            return [b'JSON invalido']
-        # Define status de retorno para diferentes cenários e retorna
-        if not 'Created' in retorno.values() and env_method == 'POST':
-            status = '208 ALREADY_REPORTED'
-        elif not 'Updated' in retorno.values() and env_method == 'PUT':
-            status = '204 NO_CONTENT'
-        elif 'Updated' in retorno.values() and env_method == 'PUT':
-            status = '202 ACCEPTED'
+            result = json.dumps(result)
+            return [result.encode('utf-8')]
+
+        elif env_method == 'POST':
+            status = '201 CREATED'
+            # adicionar id do input e condição caso o JSON venha errado **
+            try:
+                database.open_connection(aguadb)
+                body = get_JSON_REQUEST(environment)
+                quantidade_agua = body[usuario]['quantidade_agua']
+                database.post_INSERT(aguadb, idusuario, quantidade_agua)
+                result = {usuario: {'quantidade_agua': quantidade_agua}}
+            finally:
+                database.close_connection(aguadb)
+
+            response(status, headers)
+            result = json.dumps(result)
+            return [result.encode('utf-8')]
+
+    else:  # Se não esta logado:
+        print('não logado')
+        status = '401 UNAUTHORIZED'
+        retorno = json.dumps({'error': 'Credenciais não informadas ou incorretas!'})
         response(status, headers)
-        retorno = json.dumps(retorno)
         return [retorno.encode('utf-8')]
 
-    elif env_method == 'DELETE':
-        status = '200 OK'
-        retorno = {}
-        print(environment.get('HTTP_AUTHORIZATION'))
-        # Recebe id de usuário que esta tentando deletar
-        # testa se foi informado e se é valido
-        try:
-            deletion_id = int(environment.get('PATH_INFO')[1:])
-        except:
-            status = '304 NOT_MODIFIED'
-            response(status, headers)
-            return [b'Sem id para deletar']
-        if deletion_id <= 0:
-            status = '304 NOT_MODIFIED'
-            response(status, headers)
-            return [b'Sem id para deletar']
-        # Testa se existe id validado e então deleta ou ignora
-        if database.existente(aguadb, id_usuario=deletion_id):
-            retorno = {deletion_id: 'Deleted'}
-            database.delete_DELETE(aguadb, deletion_id)
-        else:
-            retorno = {deletion_id: "Doesn't Exists"}
-        # Define status 204 caso não exista o id ou ignora caso exista e retorna
-        if not 'Deleted' in retorno.values():
-            status = '204 NO_CONTENT'
-        response(status, headers)
-        retorno = json.dumps(retorno)
-        return [retorno.encode('utf-8')]
+# criar post para criação de usuario
+
 
 # Sobe o server
 with make_server('', 8000, web_app) as server:
