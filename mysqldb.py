@@ -69,7 +69,7 @@ class database:
 
     def get_SELECT(self, id_usuario: int):
         """Disponibiliza todos os inputs do usuario informado (deve estar conectado na db"""
-        self.cursor.execute(f"SELECT quantidade FROM {self.nome_database}.agua WHERE usuario_idusuario={id_usuario};")
+        self.cursor.execute(f"SELECT idagua, quantidade FROM {self.nome_database}.agua WHERE usuario_idusuario={id_usuario};")
         return self.cursor.fetchall()
 
     def post_INSERT(self, id_usuario: int, quantidade_agua: int):

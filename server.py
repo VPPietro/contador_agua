@@ -7,7 +7,7 @@ import hashlib
 aguadb = database
 # Configure sua conexão com o MySQL aqui:
 aguadb.nome_database = 'aguadatabase'
-aguadb.nome_user = 'root2'
+aguadb.nome_user = 'root'
 aguadb.password = 'toor'
 database.cria_db(aguadb)
 
@@ -43,8 +43,6 @@ def web_app(environment, response):
             usuario = usuario[0]['nome']
     finally:
         database.close_connection(aguadb)
-
-
     if usuario:  # Se esta logado:
 
         if env_method == 'GET':
@@ -53,11 +51,17 @@ def web_app(environment, response):
             try:
                 database.open_connection(aguadb)
                 select = database.get_SELECT(aguadb, idusuario)
-                quantidade_input = len(select)
-                quantidade_agua = 0
+                num_input = 0
+                result = {usuario: {}}
+                quantidade_total = 0
                 for x in select:
-                    quantidade_agua += x['quantidade']
-                result = {usuario: {'quantidade_agua': quantidade_agua, 'quantidade_inputs': quantidade_input}}
+                    id_input = x['idagua']
+                    quantidade_agua = x['quantidade']
+                    quantidade_total += quantidade_agua
+                    num_input += 1
+                    result[usuario][num_input] = {"input_id": id_input, "quantidade_agua": quantidade_agua}
+                result["quantidade_total"] = quantidade_total
+                result['quantidade_inputs'] = len(select)
             finally:
                 database.close_connection(aguadb)
             response(status, headers)
@@ -81,7 +85,7 @@ def web_app(environment, response):
             return [result.encode('utf-8')]
 
     else:  # Se não esta logado:
-        print('não logado')
+        print('não logado / incorreto')
         status = '401 UNAUTHORIZED'
         retorno = json.dumps({'error': 'Credenciais não informadas ou incorretas!'})
         response(status, headers)
