@@ -77,22 +77,18 @@ class database:
         self.cursor.execute(f"INSERT INTO agua(quantidade, usuario_idusuario) VALUES ({quantidade_agua}, {id_usuario});")
         self.db.commit()
 
-    def put_UPDATE(self, nome: str, quantidade_agua: int):
+    def put_UPDATE(self, quantidade_agua: int, idinput: int):
         """Recebe o usuário e a quantidade de água e atualiza uma entrada no db"""
-        try:
-            database.open_connection(self)
-            idusuario = database.get_idusuario(self, nome)
-            self.cursor.execute(f"INSERT INTO agua(quantidade, usuario_idusuario) VALUES ({quantidade_agua}, {idusuario})")
-            self.db.commit()
-        finally:
-            database.close_connection(self)
+        self.cursor.execute(f"UPDATE agua SET quantidade={quantidade_agua} WHERE idagua={idinput};")
+        self.db.commit()
+
+    def put_SELECT(self, idinput: int) -> bool:
+        """Seleciona o input de água para ser atualizado no PUT"""
+        self.cursor.execute(f"SELECT * FROM agua WHERE idagua={idinput}")
+        return self.cursor.fetchall()
 
     def delete_DELETE(self, id: int):
         """Deleta uma entrada no db de acordo com o id especificado"""
-        try:
-            database.open_connection(self)
-            self.cursor.execute(f"DELETE FROM agua WHERE usuario_idusuario=({id});")
-            self.cursor.execute(f"DELETE FROM usuario WHERE idusuario={id}")
-            self.db.commit()
-        finally:
-            database.close_connection(self)
+        self.cursor.execute(f"DELETE FROM agua WHERE idagua={id};")
+        self.db.commit()
+        return self.cursor.rowcount
