@@ -1,3 +1,5 @@
+ENDPOINTS
+
 >GET:
 >'/' Necessário realizar uma requisição GET na raiz do endereço do server para receber todos os usuarios com suas informação de consumo de água
 
